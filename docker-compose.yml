@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+    restart: unless-stopped
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./api
+    container_name: backend
+    volumes:
+      - ./api:/code
+      - ./api/media:/code/media
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./api/media:/code/media
+    depends_on:
+      - backend
+    restart: unless-stopped
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: >
+      sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
+      --email fedorin.mir@gmail.com --agree-tos --no-eff-email
+      -d fedorin.pp.ua"
+
+volumes:
+  postgres_data:

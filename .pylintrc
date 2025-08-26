@@ -1,0 +1,4 @@
+[TYPECHECK]
+generated-members=objects,filter,get,create,update,delete
+[MESSAGES CONTROL]
+disable=E1101

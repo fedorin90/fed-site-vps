@@ -49,9 +49,10 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: >
-      sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
-      --email fedorin.mir@gmail.com --agree-tos --no-eff-email
-      -d fedorin.pp.ua"
+      sh -c "certbot renew --webroot --webroot-path=/var/www/certbot || 
+            certbot certonly --webroot --webroot-path=/var/www/certbot
+            --email fedorin.mir@gmail.com --agree-tos --no-eff-email
+            -d fedorin.pp.ua -d www.fedorin.pp.ua"
 
 volumes:
   postgres_data:
